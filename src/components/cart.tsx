@@ -1,5 +1,5 @@
 import { useStore } from '@nanostores/solid';
-import { cart, removeItemFromCart, subtotal } from '../stores/cart';
+import { $cart as cart, removeItemFromCart, subtotal } from '../stores/cart';
 import styles from './cart.module.css';
 import { Show, createSignal } from 'solid-js';
 
@@ -14,9 +14,7 @@ const EmptyState = () => {
 	return (
 		<>
 			<p class={styles.icon}>
-				<span role="img" aria-label="hot dog">
-					🌭
-				</span>
+				<span role="img" aria-label="hot dog"></span>
 			</p>
 			<p class={styles.empty}>
 				Your cart is empty! Add a sandwich kit or two and give flavor a chance.
@@ -31,15 +29,15 @@ const CheckoutNotice = () => {
 
 export const Cart = () => {
 	const [showNotice, setShowNotice] = createSignal(false);
-	const $cart = useStore(cart);
 	const $subtotal = useStore(subtotal);
+	const $cart = useStore(cart);
 
 	return (
 		<aside class={styles.cart}>
-			<h2>Your Cart</h2>
+			<h2>Your cart</h2>
 			<Show when={Object.values($cart()).length > 0} fallback={<EmptyState />}>
 				<ul class={styles.items}>
-					{Object.values($cart()).map((entry) => {
+					{Object.values($cart()).map((entry: CartItem) => {
 						if (!entry) {
 							return null;
 						}
@@ -56,39 +54,36 @@ export const Cart = () => {
 										&times;
 									</button>
 								</span>
-								<span class={styles.price}>
-									{formatCurrency(entry.item.price)}
-								</span>
+								<span class={styles.price}>{entry.item.price}</span>
 							</li>
 						);
 					})}
+
+					<div class={styles.details}>
+						<p class={styles.subtotal}>
+							<span class={styles.label}>Subtotal:</span>{' '}
+							{formatCurrency($subtotal())}
+						</p>
+						<p class={styles.shipping}>
+							<span class={styles.label}>Shipping:</span> <del>$10.00</del>
+							<ins>FREE</ins>
+						</p>
+						<p class={styles.total}>
+							<span class={styles.label}>Total:</span>{' '}
+							{formatCurrency($subtotal())}
+						</p>
+
+						<p class={styles.checkout}>
+							<button class="big-link" onClick={() => setShowNotice(true)}>
+								Check Out
+							</button>
+						</p>
+
+						<Show when={showNotice()}>
+							<CheckoutNotice />
+						</Show>
+					</div>
 				</ul>
-
-				<div class={styles.details}>
-					<p class={styles.subtotal}>
-						<span class={styles.label}>Subtotal:</span>{' '}
-						{formatCurrency($subtotal())}
-					</p>
-					<p class={styles.shipping}>
-						<span class={styles.label}>Shipping:</span>
-						<del>$10.00</del>
-						<ins>FREE</ins>
-					</p>
-					<p class={styles.total}>
-						<span class={styles.label}>Total:</span>{' '}
-						{formatCurrency($subtotal())}
-					</p>
-
-					<p class={styles.checkout}>
-						<button class="big-link" onClick={() => setShowNotice(true)}>
-							Check Out
-						</button>
-					</p>
-
-					<Show when={showNotice()}>
-						<CheckoutNotice />
-					</Show>
-				</div>
 			</Show>
 		</aside>
 	);
